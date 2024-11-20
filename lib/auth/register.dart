@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 import 'package:responsi_124220140/auth/login.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:responsi_124220140/hive/boxes.dart';
+import 'package:responsi_124220140/hive/user.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -10,10 +12,40 @@ class RegisterPage extends StatefulWidget {
 }
 
 class _RegisterPageState extends State<RegisterPage> {
-  TextEditingController username = TextEditingController();
-  TextEditingController password = TextEditingController();
+  TextEditingController _usernameController = TextEditingController();
+  TextEditingController _passwordController = TextEditingController();
 
-  Future<void> putToBox() async {}
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    userBox = Hive.box('user');
+  }
+
+  // Fungsi untuk registrasi pengguna baru
+  void register() {
+    String username = _usernameController.text.trim();
+    String password = _passwordController.text.trim();
+
+    if (username.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Field tidak boleh kosong')));
+      return;
+    }
+
+    if (userBox.containsKey(username)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Username sudah terdaftar')));
+      return;
+    }
+
+    // Menyimpan data pengguna ke Hive
+    userBox.put(username, password);
+    ScaffoldMessenger.of(context)
+        .showSnackBar(const SnackBar(content: Text('Registrasi berhasil')));
+    Navigator.pushReplacement(
+        context, MaterialPageRoute(builder: (context) => const LoginPage()));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,12 +65,12 @@ class _RegisterPageState extends State<RegisterPage> {
                     style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
                   ),
                   TextField(
-                    controller: username,
+                    controller: _usernameController,
                     decoration: const InputDecoration(
                         label: Text('Username'), border: OutlineInputBorder()),
                   ),
                   TextField(
-                    controller: password,
+                    controller: _passwordController,
                     decoration: const InputDecoration(
                         label: Text('password'), border: OutlineInputBorder()),
                   ),
@@ -51,7 +83,7 @@ class _RegisterPageState extends State<RegisterPage> {
                             foregroundColor:
                                 WidgetStatePropertyAll(Colors.white)),
                         onPressed: () {
-                          putToBox();
+                          register();
                         },
                         child: const Text('Register')),
                   ),

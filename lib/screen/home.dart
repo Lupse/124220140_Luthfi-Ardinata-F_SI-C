@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:responsi_124220140/auth/login.dart';
+import 'package:responsi_124220140/model/detail_restaurant.dart';
 import 'package:responsi_124220140/model/list_restaurant.dart';
+import 'package:responsi_124220140/screen/detailrestaurant.dart';
+import 'package:responsi_124220140/screen/favorite_screen.dart';
 import 'package:responsi_124220140/service/api_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -13,6 +17,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final ApiService apiService = ApiService();
   String? username;
+  Set<DetailRestaurant> favorites = {};
 
   @override
   void initState() {
@@ -27,6 +32,21 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  Future<void> clearData() async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.clear();
+  }
+
+  void toggleFavorite(DetailRestaurant restaurant) {
+    setState(() {
+      if (favorites.contains(restaurant)) {
+        favorites.remove(restaurant);
+      } else {
+        favorites.add(restaurant);
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -34,8 +54,27 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor: Colors.black,
         foregroundColor: Colors.white,
         actions: [
-          IconButton(onPressed: () {}, icon: const Icon(Icons.menu)),
+          IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>
+                      FavoriteScreen(favorites: favorites.toList()),
+                ),
+              );
+            },
+            icon: const Icon(Icons.favorite),
+          ),
         ],
+        leading: IconButton(
+          onPressed: () {
+            clearData();
+            Navigator.pushReplacement(context,
+                MaterialPageRoute(builder: (context) => const LoginPage()));
+          },
+          icon: const Icon(Icons.logout),
+        ),
         title: Text('Hai, ${username!}'),
         centerTitle: true,
       ),
@@ -61,7 +100,20 @@ class _HomeScreenState extends State<HomeScreen> {
                         fit: BoxFit.cover),
                     title: Text(listRestaurant.name),
                     subtitle: Text(listRestaurant.city),
-                    onTap: () {},
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => DetailRestaurantScreen(
+                            id: listRestaurant.id,
+                            isFavorite: favorites.any((fav) =>
+                                fav.name ==
+                                listRestaurant.name), // Check favorit
+                            onFavoriteToggle: toggleFavorite,
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 );
               },

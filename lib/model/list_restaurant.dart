@@ -12,9 +12,9 @@ class ListRestaurant {
 
   factory ListRestaurant.fromJson(Map<String, dynamic> json) {
     return ListRestaurant(
-        id: json['id'] as String,
-        name: json['name'] as String,
-        pictureId: json['picture_id'] as String,
-        city: json['city'] as String);
+        id: json['id'] ?? 'NULL',
+        name: json['name'] ?? 'NULL',
+        pictureId: json['pictureId'] ?? 'NULL',
+        city: json['city'] ?? 'NULL');
   }
 }
